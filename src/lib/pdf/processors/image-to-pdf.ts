@@ -248,18 +248,12 @@ export class ImageToPDFProcessor extends BasePDFProcessor {
     const fileType = file.type.toLowerCase();
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
 
-    try {
-      if (fileType === 'image/jpeg' || ext === 'jpg' || ext === 'jpeg') {
-        image = await pdfDoc.embedJpg(uint8Array);
-      } else if (fileType === 'image/png' || ext === 'png') {
-        image = await pdfDoc.embedPng(uint8Array);
-      } else {
-        throw new Error('Format requires conversion');
-      }
-    } catch (error) {
-      // Fallback: convert to PNG via canvas
-      // This handles cases where extension doesn't match content (e.g. jpg renamed to png)
-      // or formats not natively supported by pdf-lib
+    if (fileType === 'image/jpeg' || ext === 'jpg' || ext === 'jpeg') {
+      image = await pdfDoc.embedJpg(uint8Array);
+    } else if (fileType === 'image/png' || ext === 'png') {
+      image = await pdfDoc.embedPng(uint8Array);
+    } else {
+      // For other formats (including SVG), convert to PNG via canvas
       const isSvg = fileType === 'image/svg+xml' || ext === 'svg';
       image = await this.convertAndEmbedImage(pdfDoc, file, pdfLib, isSvg ? options.svgScale : 1);
     }
